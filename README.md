@@ -41,6 +41,9 @@ Run `brunch build --production` and you'll see something like the following:
 </html>
 ```
 
+The asset files are also renamed, inside the public folder, to match the names
+above.
+
 Options
 -------
 
