@@ -5,7 +5,7 @@ glob    = require 'glob'
 
 DIGEST_RE = "DIGEST\\((.+?)\\)"
 
-warn = (message) -> console.error "WARNING (brunch-digest): #{message}"
+warn = (message) -> console.error "WARNING (digest-brunch): #{message}"
 
 class Digest
   brunchPlugin: true
