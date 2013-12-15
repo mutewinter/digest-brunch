@@ -44,7 +44,7 @@ describe 'Digest', ->
     expect(digest.options).to.include.keys('precision', 'referenceFiles')
 
   describe 'regular compile', ->
-    before ->
+    beforeEach ->
       setupFakeFileSystem()
       digest.onCompile()
 
@@ -76,7 +76,7 @@ describe 'Digest', ->
       )
 
   describe 'two digests on one line', ->
-    before ->
+    beforeEach ->
       setupFakeFileSystem()
       fs.unpatch()
       loadFixture('two_per_line.html')
@@ -89,7 +89,7 @@ describe 'Digest', ->
       expect(contents).to.contain(relativeDigestFilename('js/nested.js'))
 
   describe 'no digests in a file', ->
-    before ->
+    beforeEach ->
       setupFakeFileSystem()
       fs.unpatch()
       loadFixture('no_digests.html')
@@ -103,7 +103,7 @@ describe 'Digest', ->
       )
 
   describe 'two html files', ->
-    before ->
+    beforeEach ->
       setupFakeFileSystem()
       fs.unpatch()
       loadFixture('index.html', 'second.html')
@@ -119,7 +119,7 @@ describe 'Digest', ->
       )
 
   describe 'precision', ->
-    before ->
+    beforeEach ->
       setupFakeFileSystem()
       digest.options.precision = 6
       digest.onCompile()
@@ -133,9 +133,9 @@ describe 'Digest', ->
       )
 
   describe 'environment detection', ->
-    before ->
+    beforeEach ->
       setupFakeFileSystem()
-      digest.config.env = []
+      digest = new Digest(env: [], paths: public: 'public')
 
     it 'does not run in non-production environment', ->
       digest.config.env = []
