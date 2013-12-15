@@ -146,3 +146,23 @@ describe 'Digest', ->
       digest.options.alwaysRun = true
       digest.onCompile()
       expect(fs.existsSync(digestFilename('test.js'))).to.be.true
+
+  describe 'when not run', ->
+    beforeEach ->
+      setupFakeFileSystem()
+      digest = new Digest(env: [], paths: public: 'public')
+
+    it 'reverts DIGEST() filenames', ->
+      digest.onCompile()
+      contents = fs.readFileSync('public/index.html').toString()
+      expect(contents).to.not.contain('DIGEST')
+
+    it 'reverts two DIGEST() filenames on the same line', ->
+      fs.unpatch()
+      loadFixture('two_per_line.html')
+      fs.patch()
+      digest.onCompile()
+      contents = fs.readFileSync('public/two_per_line.html').toString()
+      expect(contents).to.not.contain('DIGEST')
+      expect(contents).to.contain('test.js')
+      expect(contents).to.contain('js/nested.js')

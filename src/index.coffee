@@ -3,6 +3,8 @@ fs      = require 'fs'
 pathlib = require 'path'
 glob    = require 'glob'
 
+DIGEST_RE = "DIGEST\\((.+?)\\)"
+
 warn = (message) -> console.error "WARNING (brunch-digest): #{message}"
 
 class Digest
@@ -25,19 +27,21 @@ class Digest
     @options[k] = cfg[k] for k of cfg
 
   onCompile: ->
-    # Don't run digest-brunch if not in production and alwaysRun flag not set.
-    return if @config.env.indexOf('production') is -1 and !@options.alwaysRun
-
     @publicFolder = @config.paths.public
-    if @options.precision < 6
-      warn 'Hash collision possible when less than 6 digits of precision used'
-
     allFiles = glob.sync("#{@publicFolder}/**")
     referenceFiles = @_referenceFiles(allFiles)
-    filesToDigest = @_filesToDigest(referenceFiles)
-    filesAndDigests = @_filesAndDigests(filesToDigest)
-    renameMap = @_renameMap(filesAndDigests)
-    @_renameAndReplace(referenceFiles, renameMap)
+
+    if @config.env.indexOf('production') is -1 and !@options.alwaysRun
+      # Replace DIGEST() references with regular file name if not running.
+      @_removeReferences(referenceFiles)
+    else
+      if @options.precision < 6
+        warn 'Name collision possible when less than 6 digits of SHA used.'
+
+      filesToDigest = @_filesToDigest(referenceFiles)
+      filesAndDigests = @_filesAndDigests(filesToDigest)
+      renameMap = @_renameMap(filesAndDigests)
+      @_renameAndReplace(referenceFiles, renameMap)
 
   _isFile: (file) -> fs.statSync(file).isFile()
 
@@ -57,7 +61,7 @@ class Digest
   _filesToDigest: (files) ->
     filesToDigest = []
     for file in files
-      digestRe = new RegExp("DIGEST\\((.+?)\\)", 'g')
+      digestRe = new RegExp(DIGEST_RE, 'g')
       contents = fs.readFileSync(file).toString()
       match = digestRe.exec(contents)
       while match isnt null
@@ -123,5 +127,12 @@ class Digest
         contents = contents.replace(fileRe, renamedFile)
 
       fs.writeFileSync(referenceFile, contents)
+
+  _removeReferences: (files) ->
+    for file in files
+      contents = fs.readFileSync(file).toString()
+      digestRe = new RegExp(DIGEST_RE, 'g')
+      contents = contents.replace(digestRe, '$1')
+      fs.writeFileSync(file, contents)
 
 module.exports = Digest
