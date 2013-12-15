@@ -11,8 +11,7 @@ Usage
 
 `npm install --save digest-brunch`
 
-Identify any assets you want to have unique digest appended to with
-`DIGEST(filename.ext)`.
+Identify assets that you want to be digested with `DIGEST(filename.ext)`.
 
 ```html
 <!DOCTYPE html>
