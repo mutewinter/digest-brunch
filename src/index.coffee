@@ -5,7 +5,7 @@ glob    = require 'glob'
 
 DIGEST_RE = "DIGEST\\((.+?)\\)"
 
-warn = (message) -> console.error "WARNING (digest-brunch): #{message}"
+warn = (message) -> console.warn "digest-brunch WARNING: #{message}"
 
 class Digest
   brunchPlugin: true
@@ -35,6 +35,9 @@ class Digest
       # Replace DIGEST() references with regular file name if not running.
       @_removeReferences(referenceFiles)
     else
+      if @config.server?.run
+        warn 'Not intended to be run with on-demand compilation (brunch watch)'
+
       if @options.precision < 6
         warn 'Name collision possible when less than 6 digits of SHA used.'
 

@@ -4,7 +4,7 @@ digest-brunch
 A [Brunch][] plugin that appends a unique SHA digest to asset filenames. Allows
 for [far-future caching][am] of assets.
 
-_Note: This plugin is not compatible with [gzip-brunch][]._
+_Note: digest-brunch is not compatible with [gzip-brunch][]._
 
 Usage
 -----
@@ -27,6 +27,9 @@ Identify assets that you want to be digested with `DIGEST(filename.ext)`.
 ```
 
 Run `brunch build --production` and you'll see something like the following:
+
+_Note: digest-brunch can not be run in `watch` mode. It's only intended for
+production builds, run once._
 
 ```html
 <!DOCTYPE html>
