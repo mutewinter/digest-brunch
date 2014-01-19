@@ -1,3 +1,11 @@
+# v1.0.5
+
+* Allow for leading `/` in DIGEST filenames.
+
+# v1.0.4
+
+* Warning in dynamic mode.
+
 # v1.0.3
 
 * Fix typo in warning message for precision.
