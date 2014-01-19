@@ -166,3 +166,16 @@ describe 'Digest', ->
       expect(contents).to.not.contain('DIGEST')
       expect(contents).to.contain('test.js')
       expect(contents).to.contain('js/nested.js')
+
+  # Regression test for https://github.com/mutewinter/digest-brunch/issues/2
+  describe 'leading slash', ->
+    beforeEach ->
+      setupFakeFileSystem()
+      fs.unpatch()
+      loadFixture('leading_slash.html')
+      fs.patch()
+      digest.onCompile()
+
+    it 'replaces occurrences of /test.js', ->
+      expect(fs.readFileSync('public/leading_slash.html').toString()).
+        to.contain("/#{relativeDigestFilename('test.js')}")

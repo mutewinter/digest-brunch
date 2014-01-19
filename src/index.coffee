@@ -129,6 +129,10 @@ class Digest
         fileRe = new RegExp("DIGEST\\(#{escaped}\\)", 'g')
         contents = contents.replace(fileRe, renamedFile)
 
+        # Also replace occurances of /filename with /filename-digest
+        fileWithSlashRe = new RegExp("DIGEST\\(/#{escaped}\\)", 'g')
+        contents = contents.replace(fileWithSlashRe, "/#{renamedFile}")
+
       fs.writeFileSync(referenceFile, contents)
 
   _removeReferences: (files) ->
