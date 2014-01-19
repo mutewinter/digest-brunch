@@ -39,7 +39,7 @@ class Digest
         warn 'Not intended to be run with on-demand compilation (brunch watch)'
 
       if @options.precision < 6
-        warn 'Name collision possible when less than 6 digits of SHA used.'
+        warn 'Name collision more likely when less than 6 digits of SHA used.'
 
       filesToDigest = @_filesToDigest(referenceFiles)
       filesAndDigests = @_filesAndDigests(filesToDigest)
