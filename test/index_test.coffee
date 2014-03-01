@@ -179,3 +179,18 @@ describe 'Digest', ->
     it 'replaces occurrences of /test.js', ->
       expect(fs.readFileSync('public/leading_slash.html').toString()).
         to.contain("/#{relativeDigestFilename('test.js')}")
+
+  describe 'missing file referenced', ->
+    beforeEach ->
+      setupFakeFileSystem()
+      fs.unpatch()
+      loadFixture('missing_reference.html')
+      fs.patch()
+
+    it 'does not crash', ->
+      expect(digest.onCompile.bind(digest)).to.not.throw(Error)
+
+    it 'still replaces valid DIGEST references', ->
+      digest.onCompile()
+      expect(fs.readFileSync('public/missing_reference.html').toString()).
+        to.contain(relativeDigestFilename('test.css'))

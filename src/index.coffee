@@ -46,9 +46,12 @@ class Digest
       renameMap = @_renameMap(filesAndDigests)
       @_renameAndReplace(referenceFiles, renameMap)
 
-  _isFile: (file) -> fs.statSync(file).isFile()
+  _validDigestFile: (file) ->
+    if !fs.existsSync(file)
+      warn "Missing DIGEST file #{file} referenced. Skipping."
+      return false
 
-  _validDigestFile: (file) -> @_isFile(file)
+    fs.statSync(file).isFile()
 
   _referenceFiles: (files) ->
     referenceFiles = []
