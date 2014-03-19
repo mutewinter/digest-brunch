@@ -129,12 +129,8 @@ class Digest
 
       for originalFile, renamedFile of renamedFiles
         escaped = originalFile.replace('.', "\\.")
-        fileRe = new RegExp("DIGEST\\(#{escaped}\\)", 'g')
-        contents = contents.replace(fileRe, renamedFile)
-
-        # Also replace occurances of /filename with /filename-digest
-        fileWithSlashRe = new RegExp("DIGEST\\(/#{escaped}\\)", 'g')
-        contents = contents.replace(fileWithSlashRe, "/#{renamedFile}")
+        fileRe = new RegExp("DIGEST\\((/?)#{escaped}\\)", 'g')
+        contents = contents.replace(fileRe, "$1#{renamedFile}")
 
       fs.writeFileSync(referenceFile, contents)
 
