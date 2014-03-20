@@ -11,7 +11,7 @@ Usage
 
 `npm install --save digest-brunch`
 
-Identify assets that you want to be digested with `DIGEST(filename.ext)`.
+Identify assets that you want to be digested with `DIGEST(filename.ext)`, or a custom pattern of your choosing.
 
 ```html
 <!DOCTYPE html>
@@ -60,6 +60,10 @@ exports.config =
   # ...
   plugins:
     digest:
+      # A RegExp where the first subgroup matches the filename to be replaced
+      pattern: /DIGEST\(\/?([^\)]*)\)/g
+      # After replacing the filename, should we discard the non-filename parts of the pattern?
+      discardNonFilenamePatternParts: yes
       # RegExp that matches files that contain DIGEST references.
       referenceFiles: /\.html$/
       # How many digits of the SHA1 to append to digested files.
