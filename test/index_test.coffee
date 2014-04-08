@@ -5,6 +5,8 @@ fs = new FakeFs
 
 FIXTURES_AND_DIGESTS =
   'index.html': 1
+  'alternate_pattern.html.alt1': 1
+  'alternate_pattern_no_discard.html.alt2': 1
   'undigested.js': 1
   'test.js': 'test-75570c26.js'
   'js/nested.js': 'js/nested-4df52a0a.js'
@@ -152,12 +154,12 @@ describe 'Digest', ->
       setupFakeFileSystem()
       digest = new Digest(env: [], paths: public: 'public')
 
-    it 'reverts DIGEST() filenames', ->
+    it 'reverts matched patterns', ->
       digest.onCompile()
       contents = fs.readFileSync('public/index.html').toString()
       expect(contents).to.not.contain('DIGEST')
 
-    it 'reverts two DIGEST() filenames on the same line', ->
+    it 'reverts two matched patterns on the same line', ->
       fs.unpatch()
       loadFixture('two_per_line.html')
       fs.patch()
@@ -190,7 +192,56 @@ describe 'Digest', ->
     it 'does not crash', ->
       expect(digest.onCompile.bind(digest)).to.not.throw(Error)
 
-    it 'still replaces valid DIGEST references', ->
+    it 'still replaces valid references', ->
       digest.onCompile()
       expect(fs.readFileSync('public/missing_reference.html').toString()).
         to.contain(relativeDigestFilename('test.css'))
+
+  describe 'pattern', ->
+
+    describe 'discarded', ->
+
+      beforeEach ->
+        setupFakeFileSystem()
+        digest.options.referenceFiles = /\.alt1$/
+        digest.options.pattern = /\*+([^\*]+)\*+/g
+        digest.options.discardNonFilenamePatternParts = yes
+        digest.onCompile()
+        @contents = fs.readFileSync('public/alternate_pattern.html.alt1').toString()
+
+      it 'discards the non-filename parts of the pattern', ->
+        contents = fs.readFileSync('public/alternate_pattern.html.alt1').toString()
+        expect(contents).to.not.contain('"**')
+        expect(contents).to.not.contain('**"')
+        expect(contents).to.not.contain('"***')
+        expect(contents).to.not.contain('***"')
+        expect(contents).to.not.contain('"****')
+        expect(contents).to.not.contain('****"')
+
+      it 'replaces occurrences of test.js in alternate_pattern.html.alt1', ->
+        expect(@contents).to.contain relativeDigestFilename('test.js')
+
+      it 'replaces occurrences of test.css in alternate_pattern.html.alt1', ->
+        expect(@contents).to.contain relativeDigestFilename('test.css')
+
+      it 'replaces occurrences of js/nested.js in alternate_pattern.html.alt1', ->
+        expect(@contents).to.contain relativeDigestFilename('js/nested.js')
+
+    describe 'non-discarded', ->
+
+      beforeEach ->
+        setupFakeFileSystem()
+        digest.options.referenceFiles = /\.alt2$/
+        digest.options.pattern = /['"]([^'"]+)['"]/g
+        digest.options.discardNonFilenamePatternParts = no
+        digest.onCompile()
+        @contents = fs.readFileSync('public/alternate_pattern_no_discard.html.alt2').toString()
+
+      it 'replaces occurrences of test.js in alternate_pattern_no_discard.html.alt2', ->
+        expect(@contents).to.contain "\"#{relativeDigestFilename('test.js')}\""
+
+      it 'replaces occurrences of test.css in alternate_pattern_no_discard.html.alt2', ->
+        expect(@contents).to.contain "'#{relativeDigestFilename('test.css')}'"
+
+      it 'replaces occurrences of js/nested.js in alternate_pattern_no_discard.html.alt2', ->
+        expect(@contents).to.contain "\"#{relativeDigestFilename('js/nested.js')}\""

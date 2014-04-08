@@ -3,7 +3,7 @@ fs      = require 'fs'
 pathlib = require 'path'
 glob    = require 'glob'
 
-DIGEST_RE = "DIGEST\\((.+?)\\)"
+LEADING_SLASH_RE = /^\//
 
 warn = (message) -> console.warn "digest-brunch WARNING: #{message}"
 
@@ -14,7 +14,11 @@ class Digest
 
     # Defaults options
     @options = {
-      # RegExp that matches files that contain DIGEST references.
+      # A RegExp where the first subgroup matches the filename to be replaced
+      pattern: /DIGEST\((\/?[^\)]*)\)/g
+      # After replacing the filename, should we discard the non-filename parts of the pattern?
+      discardNonFilenamePatternParts: yes
+      # RegExp that matches files that contain filename references.
       referenceFiles: /\.html$/
       # How many digits of the SHA1 to append to digested files.
       precision: 8
@@ -26,13 +30,20 @@ class Digest
     cfg = @config.plugins?.digest ? {}
     @options[k] = cfg[k] for k of cfg
 
+    # Ensure that the pattern RegExp is global
+    needle = @options.pattern.source or @options.pattern or ''
+    flags = 'g'
+    flags += 'i' if @options.pattern.ignoreCase
+    flags += 'm' if @options.pattern.multiline
+    @options.pattern = new RegExp(needle, flags)
+
   onCompile: ->
     @publicFolder = @config.paths.public
     allFiles = glob.sync("#{@publicFolder}/**")
     referenceFiles = @_referenceFiles(allFiles)
 
     if @config.env.indexOf('production') is -1 and !@options.alwaysRun
-      # Replace DIGEST() references with regular file name if not running.
+      # Replace filename references with regular file name if not running.
       @_removeReferences(referenceFiles)
     else
       if @config.server?.run
@@ -48,7 +59,7 @@ class Digest
 
   _validDigestFile: (file) ->
     if !fs.existsSync(file)
-      warn "Missing DIGEST file #{file} referenced. Skipping."
+      warn "Missing hashed version of file #{file}. Skipping."
       return false
 
     fs.statSync(file).isFile()
@@ -67,12 +78,14 @@ class Digest
   _filesToDigest: (files) ->
     filesToDigest = []
     for file in files
-      digestRe = new RegExp(DIGEST_RE, 'g')
+      # Reset the pattern's internal match tracker
+      @options.pattern.lastIndex = 0
+
       contents = fs.readFileSync(file).toString()
-      match = digestRe.exec(contents)
+      match = @options.pattern.exec(contents)
       while match isnt null
         filesToDigest.push match[1]
-        match = digestRe.exec(contents)
+        match = @options.pattern.exec(contents)
 
     filesToDigest
 
@@ -85,21 +98,27 @@ class Digest
     precision = @options.precision
     filesAndDigests = {}
     for file in files
+      hasLeadingSlash = LEADING_SLASH_RE.test(file)
       file = pathlib.join(@publicFolder, file)
       if @_validDigestFile(file)
         data = fs.readFileSync file
         shasum = crypto.createHash 'sha1'
         shasum.update(data)
         relativePath = pathlib.relative(@publicFolder, file)
+        relativePath = "/#{relativePath}" if hasLeadingSlash
         filesAndDigests[relativePath] = shasum.digest('hex')[0..precision-1]
     filesAndDigests
 
   _renameAndReplace: (referenceFiles, renameMap) ->
-    # Rename digest files
+    # Generate a name map
+    nameMap = {}
     for originalFilename, newFilename of renameMap
       originalPath = pathlib.join(@publicFolder, originalFilename)
       newPath = pathlib.join(@publicFolder, newFilename)
-      fs.renameSync(originalPath, newPath)
+      nameMap[originalPath] = newPath
+
+    # Perform the renames
+    fs.renameSync(originalPath, newPath) for originalPath, newPath of nameMap
 
     # Replace occurances of that file in reference files.
     @_replaceReferences(referenceFiles, renameMap)
@@ -125,20 +144,40 @@ class Digest
 
   _replaceReferences: (referenceFiles, renamedFiles) ->
     for referenceFile in referenceFiles
-      contents = fs.readFileSync(referenceFile).toString()
+      # Store a mapping between strings matching the pattern and their replacements
+      replacementMap = {}
 
-      for originalFile, renamedFile of renamedFiles
-        escaped = originalFile.replace('.', "\\.")
-        fileRe = new RegExp("DIGEST\\((/?)#{escaped}\\)", 'g')
-        contents = contents.replace(fileRe, "$1#{renamedFile}")
+      # Reset the pattern's internal match tracker
+      @options.pattern.lastIndex = 0
+
+      # Search this file for strings that need replacing
+      continue unless fs.existsSync(referenceFile)
+      contents = fs.readFileSync(referenceFile).toString()
+      match = @options.pattern.exec(contents)
+      while match isnt null
+        # Lookup the filename
+        originalFilename = match[1]
+
+        # Find a suitable replacement filename
+        replacementFilename = renamedFiles[originalFilename]
+
+        # Synthesize the replacement
+        replacementMap[if @options.discardNonFilenamePatternParts then match[0] else originalFilename] = replacementFilename or originalFilename
+
+        # Search for the next match
+        match = @options.pattern.exec(contents)
+
+      # Perform the replacements
+      for originalString, processedString of replacementMap
+        contents = contents.replace(originalString, processedString)
 
       fs.writeFileSync(referenceFile, contents)
 
   _removeReferences: (files) ->
+    return unless @options.discardNonFilenamePatternParts
     for file in files
       contents = fs.readFileSync(file).toString()
-      digestRe = new RegExp(DIGEST_RE, 'g')
-      contents = contents.replace(digestRe, '$1')
+      contents = contents.replace(@options.pattern, '$1')
       fs.writeFileSync(file, contents)
 
 module.exports = Digest
