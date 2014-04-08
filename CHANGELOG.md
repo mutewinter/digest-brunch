@@ -1,3 +1,11 @@
+# v1.1.0
+
+* Customizable DIGEST pattern (thanks to @steveluscher)
+
+# v1.0.6
+
+* Handle missing files gracefully.
+
 # v1.0.5
 
 * Allow for leading `/` in DIGEST filenames.
