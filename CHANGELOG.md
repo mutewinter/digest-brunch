@@ -1,3 +1,7 @@
+# v1.1.1
+
+* Fix: Compile JavaScript.
+
 # v1.1.0
 
 * Customizable DIGEST pattern (thanks to @steveluscher)
