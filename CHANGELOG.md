@@ -1,3 +1,7 @@
+# v1.2.0
+
+* Feature: [Environment-specific host][10] thanks to @Tomtomgo.
+
 # v1.1.1
 
 * Fix: Compile JavaScript.
@@ -33,3 +37,6 @@
 # v1.0.0
 
 * Initial release
+
+
+[10]: https://github.com/mutewinter/digest-brunch/pull/10
