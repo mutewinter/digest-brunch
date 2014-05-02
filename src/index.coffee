@@ -11,7 +11,6 @@ class Digest
   brunchPlugin: true
 
   constructor: (@config) ->
-
     # Defaults options
     @options = {
       # A RegExp where the first subgroup matches the filename to be replaced
@@ -24,6 +23,10 @@ class Digest
       precision: 8
       # Force digest-brunch to run in all environments when true.
       alwaysRun: false
+      # Run in specific environments
+      environments: ['production']
+      # Prepend an absolute asset host URL to the file paths in the reference files
+      prependHost: null
     }
 
     # Merge config
@@ -42,7 +45,8 @@ class Digest
     allFiles = glob.sync("#{@publicFolder}/**")
     referenceFiles = @_referenceFiles(allFiles)
 
-    if @config.env.indexOf('production') is -1 and !@options.alwaysRun
+    # Check if the current environment is one we want to add digests for
+    if (@config.env[0] not in @options.environments) and !@options.alwaysRun
       # Replace filename references with regular file name if not running.
       @_removeReferences(referenceFiles)
     else
@@ -136,7 +140,6 @@ class Digest
       directory = pathlib.dirname(path)
       extname = pathlib.extname(path)
       filename = pathlib.basename(path, extname)
-
       digestFilename = "#{filename}-#{digest}#{extname}"
       digestPath = pathlib.join(directory, digestFilename)
       renameMap[path] = digestPath
@@ -160,6 +163,9 @@ class Digest
 
         # Find a suitable replacement filename
         replacementFilename = renamedFiles[originalFilename]
+
+        if @options.prependHost?[@config.env[0]]?
+          replacementFilename = @options.prependHost[@config.env[0]] + replacementFilename
 
         # Synthesize the replacement
         replacementMap[if @options.discardNonFilenamePatternParts then match[0] else originalFilename] = replacementFilename or originalFilename

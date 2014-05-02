@@ -77,6 +77,27 @@ describe 'Digest', ->
         relativeDigestFilename('js/nested.js')
       )
 
+  describe 'asset host prepending', ->
+    beforeEach ->
+      setupFakeFileSystem()
+      digest = new Digest(env: [], paths: public: 'public')
+
+    it 'prepends alternative asset host when set for env', ->
+      host = 'http://wow_such_host.com'
+      digest.options.prependHost = {test: host}
+      digest.config.env = ['test']
+      digest.options.environments = ['test']
+      digest.onCompile()
+      expect(fs.readFileSync('public/index.html').toString()).to.contain(host)
+
+    it 'does not prepend alternative asset host when not set for env', ->
+      host = 'http://wow_such_host.com'
+      digest.options.prependHost = {no_test: host}
+      digest.config.env = ['test']
+      digest.options.environments = ['test']
+      digest.onCompile()
+      expect(fs.readFileSync('public/index.html').toString()).to.not.contain(host)
+
   describe 'two digests on one line', ->
     beforeEach ->
       setupFakeFileSystem()
@@ -141,6 +162,18 @@ describe 'Digest', ->
 
     it 'does not run in non-production environment', ->
       digest.config.env = []
+      digest.onCompile()
+      expect(fs.existsSync(digestFilename('test.js'))).to.be.false
+
+    it 'does run in selected non-production environment', ->
+      digest.options.environments = ['amazing_super']
+      digest.config.env = ['amazing_super']
+      digest.onCompile()
+      expect(fs.existsSync(digestFilename('test.js'))).to.be.true
+
+    it 'does not run in not selected non-production environment', ->
+      digest.options.environments = ['amazing_super']
+      digest.config.env = ['boring_super']
       digest.onCompile()
       expect(fs.existsSync(digestFilename('test.js'))).to.be.false
 
