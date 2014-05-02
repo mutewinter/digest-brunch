@@ -1,6 +1,6 @@
 {
   "name": "digest-brunch",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A Brunch plugin that appends a unique SHA digest to asset filenames.",
   "author": "Jeremy Mack @mutewinter",
   "homepage": "https://github.com/mutewinter/digest-brunch",
