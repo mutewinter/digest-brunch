@@ -1,3 +1,7 @@
+# v1.2.1
+
+* Chore: Compile JavaScript.
+
 # v1.2.0
 
 * Feature: [Environment-specific host][10] thanks to @Tomtomgo.
