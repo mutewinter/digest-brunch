@@ -70,6 +70,10 @@ exports.config =
       precision: 8
       # Force digest-brunch to run in all environments when true.
       alwaysRun: false
+      # Specify an array of environments to run in.
+      environments: ['production']
+      # Prepend an asset host URL to the file paths in the reference files. Use an object e.g. {production: 'http://production-asset-host.co'}
+      prependHost: null
 ```
 
 Contributing
