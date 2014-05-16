@@ -1,3 +1,7 @@
+# v1.2.2
+
+* Fix: [issue with repeated DIGEST occurrences not being replaced][11]
+
 # v1.2.1
 
 * Chore: Compile JavaScript.
@@ -44,3 +48,4 @@
 
 
 [10]: https://github.com/mutewinter/digest-brunch/pull/10
+[11]: https://github.com/mutewinter/digest-brunch/issues/11
