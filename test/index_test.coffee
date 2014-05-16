@@ -67,6 +67,9 @@ describe 'Digest', ->
         relativeDigestFilename('test.js')
       )
 
+    it 'replaces ALL occurrences of test.js in index.html', ->
+      expect(fs.readFileSync('public/index.html').toString()).to.not.contain 'test.js'
+
     it 'replaces occurrences of test.css in index.html', ->
       expect(fs.readFileSync('public/index.html').toString()).to.contain(
         relativeDigestFilename('test.css')

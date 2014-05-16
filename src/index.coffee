@@ -145,6 +145,11 @@ class Digest
       renameMap[path] = digestPath
     renameMap
 
+  # A function to escape a regular expression
+  # Taken from http://stackoverflow.com/a/6969486
+  _escapeRegExp: (str) ->
+    str.replace /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"
+
   _replaceReferences: (referenceFiles, renamedFiles) ->
     for referenceFile in referenceFiles
       # Store a mapping between strings matching the pattern and their replacements
@@ -175,7 +180,8 @@ class Digest
 
       # Perform the replacements
       for originalString, processedString of replacementMap
-        contents = contents.replace(originalString, processedString)
+        findRegExp = new RegExp(@_escapeRegExp(originalString), 'g') # Add g flag for global replace
+        contents = contents.replace(findRegExp, processedString)
 
       fs.writeFileSync(referenceFile, contents)
 
