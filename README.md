@@ -1,4 +1,4 @@
-digest-brunch [![Build Status](http://img.shields.io/travis/mutewinter/digest-brunch.svg?style=flat)](https://travis-ci.org/mutewinter/digest-brunch) [![Dependency Status](http://img.shields.io/gemnasium/mutewinter/digest-brunch.svg?style=flat)](https://gemnasium.com/mutewinter/digest-brunch)
+digest-brunch [![NPM Version][npm-badge]][npm] [![Build Status][travis-badge]][travis] [![Dependency Status][gemnasium-badge]][gemnasium]
 =============
 
 A [Brunch][] plugin that appends a unique SHA digest to asset filenames. Allows
@@ -92,3 +92,9 @@ MIT
 [Brunch]: http://brunch.io
 [am]: http://blog.alexmaccaw.com/time-to-first-tweet
 [gzip-brunch]: https://github.com/banyan/gzip-brunch
+[npm]: https://npmjs.org/package/digest-brunch
+[npm-badge]: http://img.shields.io/npm/v/digest-brunch.svg?style=flat
+[travis]: https://travis-ci.org/mutewinter/digest-brunch
+[travis-badge]: https://img.shields.io/travis/mutewinter/digest-brunch.svg?style=flat
+[gemnasium]: https://gemnasium.com/mutewinter/digest-brunch
+[gemnasium-badge]: https://img.shields.io/gemnasium/mutewinter/digest-brunch.svg?style=flat
