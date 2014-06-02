@@ -1,4 +1,4 @@
-digest-brunch [![Build Status](https://travis-ci.org/mutewinter/digest-brunch.png?branch=master)](https://travis-ci.org/mutewinter/digest-brunch) [![Dependency Status](https://gemnasium.com/mutewinter/digest-brunch.png)](https://gemnasium.com/mutewinter/digest-brunch)
+digest-brunch [![Build Status](http://img.shields.io/travis/mutewinter/digest-brunch.svg?style=flat)](https://travis-ci.org/mutewinter/digest-brunch) [![Dependency Status](http://img.shields.io/gemnasium/mutewinter/digest-brunch.svg?style=flat)](https://gemnasium.com/mutewinter/digest-brunch)
 =============
 
 A [Brunch][] plugin that appends a unique SHA digest to asset filenames. Allows
