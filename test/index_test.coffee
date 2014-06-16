@@ -281,3 +281,16 @@ describe 'Digest', ->
 
       it 'replaces occurrences of js/nested.js in alternate_pattern_no_discard.html.alt2', ->
         expect(@contents).to.contain "\"#{relativeDigestFilename('js/nested.js')}\""
+
+  describe 'manifest', ->
+    beforeEach ->
+      setupFakeFileSystem()
+
+    it 'outputs a manifest', ->
+      digest.options.manifest = 'public/manifest.json'
+      digest.onCompile()
+      manifest = JSON.parse(fs.readFileSync('public/manifest.json'))
+      expect(Object.keys(manifest)).to.have.length 3
+      expect(manifest['test.js']).to.equal FIXTURES_AND_DIGESTS['test.js']
+      expect(manifest['js/nested.js']).to.equal FIXTURES_AND_DIGESTS['js/nested.js']
+      expect(manifest['test.css']).to.equal FIXTURES_AND_DIGESTS['test.css']
