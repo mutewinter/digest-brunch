@@ -14,8 +14,8 @@
     "test": "node_modules/.bin/mocha --require test/test_helper.coffee --compilers coffee:coffee-script"
   },
   "dependencies": {
-    "fs-extra": "~0.8.1",
-    "glob": "~3.2.7"
+    "fs-extra": "~0.9.1",
+    "glob": "~3.2.11"
   },
   "devDependencies": {
     "chai": "~1.8.1",
