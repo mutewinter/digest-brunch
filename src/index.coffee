@@ -27,6 +27,8 @@ class Digest
       environments: ['production']
       # Prepend an absolute asset host URL to the file paths in the reference files
       prependHost: null
+      # Output filename for a JSON manifest of reference file paths and their digest.
+      manifest: ''
     }
 
     # Merge config
@@ -59,6 +61,8 @@ class Digest
       filesToDigest = @_filesToDigest(referenceFiles)
       filesAndDigests = @_filesAndDigests(filesToDigest)
       renameMap = @_renameMap(filesAndDigests)
+      if @options.manifest
+        fs.writeFileSync(@options.manifest, JSON.stringify(renameMap, null, 4))
       @_renameAndReplace(referenceFiles, renameMap)
 
   _validDigestFile: (file) ->

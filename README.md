@@ -74,6 +74,8 @@ exports.config =
       environments: ['production']
       # Prepend an asset host URL to the file paths in the reference files. Use an object e.g. {production: 'http://production-asset-host.co'}
       prependHost: null
+      # Output filename for a JSON manifest of reference file paths and their digest.
+      manifest: ''
 ```
 
 Contributing
