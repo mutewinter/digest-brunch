@@ -76,6 +76,8 @@ exports.config =
       prependHost: null
       # Output filename for a JSON manifest of reference file paths and their digest.
       manifest: ''
+      # An array of infixes for alternate versions of files. This is useful when e.g. using retina.js (http://imulus.github.io/retinajs/) (@2x) for high density images.
+      infixes: []
 ```
 
 Contributing

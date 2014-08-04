@@ -29,6 +29,8 @@ class Digest
       prependHost: null
       # Output filename for a JSON manifest of reference file paths and their digest.
       manifest: ''
+      # An array of infixes for alternate versions of files. This is useful when e.g. using retina.js (@2x) for high density images.
+      infixes: []
     }
 
     # Merge config
@@ -61,6 +63,7 @@ class Digest
       filesToDigest = @_filesToDigest(referenceFiles)
       filesAndDigests = @_filesAndDigests(filesToDigest)
       renameMap = @_renameMap(filesAndDigests)
+      
       if @options.manifest
         fs.writeFileSync(@options.manifest, JSON.stringify(renameMap, null, 4))
       @_renameAndReplace(referenceFiles, renameMap)
@@ -146,7 +149,16 @@ class Digest
       filename = pathlib.basename(path, extname)
       digestFilename = "#{filename}-#{digest}#{extname}"
       digestPath = pathlib.join(directory, digestFilename)
+
       renameMap[path] = digestPath
+
+      # Check if we need to add an infix for this guy
+      for infix in @options.infixes
+        infixPath = pathlib.join(directory, "#{filename}#{infix}#{extname}")
+        
+        if fs.existsSync(pathlib.join(@publicFolder, infixPath))
+          renameMap[infixPath] = pathlib.join(directory, "#{filename}-#{digest}#{infix}#{extname}")
+
     renameMap
 
   # A function to escape a regular expression

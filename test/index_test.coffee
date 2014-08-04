@@ -11,6 +11,7 @@ FIXTURES_AND_DIGESTS =
   'test.js': 'test-75570c26.js'
   'js/nested.js': 'js/nested-4df52a0a.js'
   'test.css': 'test-e3eda643.css'
+  'otter.jpeg': 'otter-b7071245.jpeg'
 
 digestFilename = (filename) ->
   path.join('public', FIXTURES_AND_DIGESTS[filename])
@@ -100,6 +101,25 @@ describe 'Digest', ->
       digest.options.environments = ['test']
       digest.onCompile()
       expect(fs.readFileSync('public/index.html').toString()).to.not.contain(host)
+
+  describe 'alternate file versions with infixes', ->
+    beforeEach ->
+        setupFakeFileSystem()
+        digest = new Digest(env: [], paths: public: 'public')
+
+    it 'copies digest to alternative file', ->
+      digest.options.infixes = ["@2x"]
+      original = relativeDigestFilename('otter.jpeg')
+      splitPos = original.length - 5 # we insert the @2x just before the .jpeg
+      infixDigested = [original.slice(0, splitPos), "@2x", original.slice(splitPos)].join("")
+      expect(fs.existsSync(path.join('public', infixDigested)))
+
+    it 'does not copy digest to alternative file if not requested', ->
+      digest.options.infixes = null
+      original = relativeDigestFilename('otter.jpeg')
+      splitPos = original.length - 5 # we insert the @2x just before the .jpeg
+      infixDigested = [original.slice(0, splitPos), "@2x", original.slice(splitPos)].join("")
+      expect(!fs.existsSync(path.join('public', infixDigested)))
 
   describe 'two digests on one line', ->
     beforeEach ->
@@ -290,7 +310,7 @@ describe 'Digest', ->
       digest.options.manifest = 'public/manifest.json'
       digest.onCompile()
       manifest = JSON.parse(fs.readFileSync('public/manifest.json'))
-      expect(Object.keys(manifest)).to.have.length 3
+      expect(Object.keys(manifest)).to.have.length 4
       expect(manifest['test.js']).to.equal FIXTURES_AND_DIGESTS['test.js']
       expect(manifest['js/nested.js']).to.equal FIXTURES_AND_DIGESTS['js/nested.js']
       expect(manifest['test.css']).to.equal FIXTURES_AND_DIGESTS['test.css']
