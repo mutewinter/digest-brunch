@@ -1,3 +1,7 @@
+# v1.4.0
+
+* Feature: [add infix version of file with same digest as original][17]
+
 # v1.3.0
 
 * Feature: [Option to output digest manifest to JSON file][15]
@@ -54,3 +58,4 @@
 [10]: https://github.com/mutewinter/digest-brunch/pull/10
 [11]: https://github.com/mutewinter/digest-brunch/issues/11
 [15]: https://github.com/mutewinter/digest-brunch/pull/15
+[17]: https://github.com/mutewinter/digest-brunch/pull/17
