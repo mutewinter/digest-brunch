@@ -1,3 +1,5 @@
+Digest = require('../src/index')
+expect = require('chai').expect
 FakeFs = require 'fake-fs'
 realFs = require 'fs'
 path = require 'path'
