@@ -42,8 +42,8 @@ describe 'Digest', ->
       paths: public: 'public'
     )
 
-  it 'is an object', ->
-    expect(typeof digest).to.eq('object')
+  it 'is an instance of Digest', ->
+    expect(digest).to.be.instanceOf(Digest)
 
   it 'has default config keys', ->
     expect(digest.options).to.include.keys('precision', 'referenceFiles')
