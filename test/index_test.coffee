@@ -4,6 +4,10 @@ fs = require 'fs'
 fse = require 'fs-extra'
 path = require 'path'
 
+Digest.logger = {
+  warn: (message) -> null # do nothing
+}
+
 FIXTURES_AND_DIGESTS =
   'test.js': 'test-75570c26.js'
   'js/nested.js': 'js/nested-4df52a0a.js'

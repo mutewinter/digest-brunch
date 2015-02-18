@@ -5,7 +5,7 @@ glob    = require 'glob'
 
 LEADING_SLASH_RE = /^\//
 
-warn = (message) -> console.warn "digest-brunch WARNING: #{message}"
+warn = (message) -> Digest.logger.warn "digest-brunch WARNING: #{message}"
 
 class Digest
   brunchPlugin: true
@@ -63,7 +63,7 @@ class Digest
       filesToDigest = @_filesToDigest(referenceFiles)
       filesAndDigests = @_filesAndDigests(filesToDigest)
       renameMap = @_renameMap(filesAndDigests)
-      
+
       if @options.manifest
         fs.writeFileSync(@options.manifest, JSON.stringify(renameMap, null, 4))
       @_renameAndReplace(referenceFiles, renameMap)
@@ -155,7 +155,7 @@ class Digest
       # Check if we need to add an infix for this guy
       for infix in @options.infixes
         infixPath = pathlib.join(directory, "#{filename}#{infix}#{extname}")
-        
+
         if fs.existsSync(pathlib.join(@publicFolder, infixPath))
           renameMap[infixPath] = pathlib.join(directory, "#{filename}-#{digest}#{infix}#{extname}")
 
@@ -207,5 +207,7 @@ class Digest
       contents = fs.readFileSync(file).toString()
       contents = contents.replace(@options.pattern, '$1')
       fs.writeFileSync(file, contents)
+
+Digest.logger = console
 
 module.exports = Digest
