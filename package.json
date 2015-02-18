@@ -8,9 +8,8 @@
     "type": "git",
     "url": "git@github.com:mutewinter/digest-brunch.git"
   },
-  "main": "./lib/index",
+  "main": "./src/index",
   "scripts": {
-    "prepublish": "rm -rf lib && coffee --bare --output lib/ src/",
     "test": "node_modules/.bin/mocha --compilers coffee:coffee-script/register"
   },
   "dependencies": {
