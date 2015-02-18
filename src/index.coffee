@@ -2,6 +2,7 @@ crypto  = require 'crypto'
 fs      = require 'fs'
 pathlib = require 'path'
 glob    = require 'glob'
+toposort = require 'toposort'
 
 LEADING_SLASH_RE = /^\//
 
@@ -46,13 +47,12 @@ class Digest
 
   onCompile: ->
     @publicFolder = @config.paths.public
-    allFiles = glob.sync("#{@publicFolder}/**")
-    referenceFiles = @_referenceFiles(allFiles)
+    filesToSearch = @_referenceFiles()
 
     # Check if the current environment is one we want to add digests for
     if (@config.env[0] not in @options.environments) and !@options.alwaysRun
       # Replace filename references with regular file name if not running.
-      @_removeReferences(referenceFiles)
+      @_removeReferences(filesToSearch)
     else
       if @config.server?.run
         warn 'Not intended to be run with on-demand compilation (brunch watch)'
@@ -60,146 +60,12 @@ class Digest
       if @options.precision < 6
         warn 'Name collision more likely when less than 6 digits of SHA used.'
 
-      filesToDigest = @_filesToDigest(referenceFiles)
-      filesAndDigests = @_filesAndDigests(filesToDigest)
-      renameMap = @_renameMap(filesAndDigests)
+      sortedFilesToSearch = @_sortByDependencyGraph(filesToSearch)
+      replacementDigestMap = {}
+      for file in sortedFilesToSearch
+        @_replaceFileDigests(file, replacementDigestMap)
 
-      if @options.manifest
-        fs.writeFileSync(@options.manifest, JSON.stringify(renameMap, null, 4))
-      @_renameAndReplace(referenceFiles, renameMap)
-
-  _validDigestFile: (file) ->
-    if !fs.existsSync(file)
-      warn "Missing hashed version of file #{file}. Skipping."
-      return false
-
-    fs.statSync(file).isFile()
-
-  _referenceFiles: (files) ->
-    referenceFiles = []
-    for file in files
-      referenceFiles.push file if @options.referenceFiles.test(file)
-    referenceFiles
-
-  # Internal: Find files that need a digest in all valid reference files.
-  #
-  # files - An array of files that may contain digest references.
-  #
-  # Returns an array of filenames.
-  _filesToDigest: (files) ->
-    filesToDigest = []
-    for file in files
-      # Reset the pattern's internal match tracker
-      @options.pattern.lastIndex = 0
-
-      contents = fs.readFileSync(file).toString()
-      match = @options.pattern.exec(contents)
-      while match isnt null
-        filesToDigest.push match[1]
-        match = @options.pattern.exec(contents)
-
-    filesToDigest
-
-  # Internal: Generate a hash of filenames to their digests.
-  #
-  # files - An array of files.
-  #
-  # Returns an object with keys of filenames and value of the digest.
-  _filesAndDigests: (files) ->
-    precision = @options.precision
-    filesAndDigests = {}
-    for file in files
-      hasLeadingSlash = LEADING_SLASH_RE.test(file)
-      file = pathlib.join(@publicFolder, file)
-      if @_validDigestFile(file)
-        data = fs.readFileSync file
-        shasum = crypto.createHash 'sha1'
-        shasum.update(data)
-        relativePath = pathlib.relative(@publicFolder, file)
-        relativePath = "/#{relativePath}" if hasLeadingSlash
-        filesAndDigests[relativePath] = shasum.digest('hex')[0..precision-1]
-    filesAndDigests
-
-  _renameAndReplace: (referenceFiles, renameMap) ->
-    # Generate a name map
-    nameMap = {}
-    for originalFilename, newFilename of renameMap
-      originalPath = pathlib.join(@publicFolder, originalFilename)
-      newPath = pathlib.join(@publicFolder, newFilename)
-      nameMap[originalPath] = newPath
-
-    # Perform the renames
-    fs.renameSync(originalPath, newPath) for originalPath, newPath of nameMap
-
-    # Replace occurances of that file in reference files.
-    @_replaceReferences(referenceFiles, renameMap)
-
-  # Internal: Make a mapping of files to their renamed version containing the
-  # digest.
-  #
-  # filesAndDigests - an object with keys of filenames and value of the
-  # digest.
-  #
-  # Returns an object with keys of filenames and values of the new filename
-  _renameMap: (filesAndDigests) ->
-    renameMap = {}
-    for path, digest of filesAndDigests
-      directory = pathlib.dirname(path)
-      extname = pathlib.extname(path)
-      filename = pathlib.basename(path, extname)
-      digestFilename = "#{filename}-#{digest}#{extname}"
-      digestPath = pathlib.join(directory, digestFilename)
-
-      renameMap[path] = digestPath
-
-      # Check if we need to add an infix for this guy
-      for infix in @options.infixes
-        infixPath = pathlib.join(directory, "#{filename}#{infix}#{extname}")
-
-        if fs.existsSync(pathlib.join(@publicFolder, infixPath))
-          renameMap[infixPath] = pathlib.join(directory, "#{filename}-#{digest}#{infix}#{extname}")
-
-    renameMap
-
-  # A function to escape a regular expression
-  # Taken from http://stackoverflow.com/a/6969486
-  _escapeRegExp: (str) ->
-    str.replace /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"
-
-  _replaceReferences: (referenceFiles, renamedFiles) ->
-    for referenceFile in referenceFiles
-      # Store a mapping between strings matching the pattern and their replacements
-      replacementMap = {}
-
-      # Reset the pattern's internal match tracker
-      @options.pattern.lastIndex = 0
-
-      # Search this file for strings that need replacing
-      continue unless fs.existsSync(referenceFile)
-      contents = fs.readFileSync(referenceFile).toString()
-      match = @options.pattern.exec(contents)
-      while match isnt null
-        # Lookup the filename
-        originalFilename = match[1]
-
-        # Find a suitable replacement filename
-        replacementFilename = renamedFiles[originalFilename]
-
-        if @options.prependHost?[@config.env[0]]?
-          replacementFilename = @options.prependHost[@config.env[0]] + replacementFilename
-
-        # Synthesize the replacement
-        replacementMap[if @options.discardNonFilenamePatternParts then match[0] else originalFilename] = replacementFilename or originalFilename
-
-        # Search for the next match
-        match = @options.pattern.exec(contents)
-
-      # Perform the replacements
-      for originalString, processedString of replacementMap
-        findRegExp = new RegExp(@_escapeRegExp(originalString), 'g') # Add g flag for global replace
-        contents = contents.replace(findRegExp, processedString)
-
-      fs.writeFileSync(referenceFile, contents)
+      @_writeManifestFile(replacementDigestMap)
 
   _removeReferences: (files) ->
     return unless @options.discardNonFilenamePatternParts
@@ -207,6 +73,102 @@ class Digest
       contents = fs.readFileSync(file).toString()
       contents = contents.replace(@options.pattern, '$1')
       fs.writeFileSync(file, contents)
+
+  # All files matching the `referenceFiles` regexp.
+  # These are the target search and replace files.
+  _referenceFiles: ->
+    allFiles = glob.sync("#{@publicFolder}/**")
+    referenceFiles = []
+    for file in allFiles
+      referenceFiles.push file if @options.referenceFiles.test(file)
+    referenceFiles
+
+  # Because dependencies may contain other dependencies,
+  # we will proceed in order of increasing dependency.
+  _sortByDependencyGraph: (files) ->
+    graph = []
+    for file in files
+      # Reset the pattern's internal match tracker
+      @options.pattern.lastIndex = 0
+      contents = fs.readFileSync(file, 'UTF-8')
+      match = @options.pattern.exec(contents)
+      while match isnt null
+        url = match[1]
+        dependency = @_fileFromUrl(url)
+        graph.push [dependency, file]
+        match = @options.pattern.exec(contents)
+    sorted = toposort(graph)
+    sorted.filter (file) ->
+      files.indexOf(file) >= 0
+
+  # The filename a digest url should map to.
+  _fileFromUrl: (reference) ->
+    file = pathlib.join(@publicFolder, reference)
+
+  # Search and replace a single reference file.
+  # All digest urls encountered will be mapped to a real file,
+  # the file will be hashed and renamed with its hash,
+  # and the url will be rewritten to include the hash.
+  _replaceFileDigests: (file, digestMap) ->
+    # Reset the pattern's internal match tracker
+    @options.pattern.lastIndex = 0
+    contents = fs.readFileSync(file, 'UTF-8')
+    self = this
+    replacement = contents.replace @options.pattern, (digest, url) ->
+      hash = self._hashFromUrl url, digestMap
+      urlWithHash = self._addHashToPath(url, hash)
+
+      if self.options.prependHost?[self.config.env[0]]?
+        urlWithHash = self.options.prependHost[self.config.env[0]] + urlWithHash
+
+      if self.options.discardNonFilenamePatternParts
+        urlWithHash
+      else
+        digest.replace url, urlWithHash
+
+    fs.writeFileSync(file, replacement)
+
+  # We're moving files and keeping their hashes as we go.
+  # Returns the hash of a file.
+  # Computes the hash and renames the file if needed.
+  _hashFromUrl: (url, digestMap) ->
+    file = @_fileFromUrl url
+    if digestMap[file] == undefined
+      if @_validDigestFile file
+        data = fs.readFileSync file
+        shasum = crypto.createHash 'sha1'
+        shasum.update(data)
+        sha1 = shasum.digest('hex')[0..@options.precision-1]
+        newFile = @_addHashToPath(file, sha1)
+        fs.renameSync(file, newFile)
+        digestMap[file] = sha1
+      else
+        digestMap[file] = null
+    digestMap[file]
+
+  _validDigestFile: (file) ->
+    if !fs.existsSync(file)
+      warn "Missing hashed version of file #{file}. Skipping."
+      return false
+    fs.statSync(file).isFile()
+
+  _addHashToPath: (path, hash) ->
+    dir = pathlib.dirname(path)
+    ext = pathlib.extname(path)
+    base = pathlib.basename(path, ext)
+    newName = "#{base}-#{hash}#{ext}"
+    pathlib.join(dir, newName)
+
+  _writeManifestFile: (renameMap) ->
+    if not @options.manifest
+      return
+    manifest = {}
+    for file, hash of renameMap
+      relative = pathlib.relative(@publicFolder, file)
+      rename = @_addHashToPath relative, hash
+      manifest[relative] = rename
+    fs.writeFileSync(@options.manifest, JSON.stringify(manifest, null, 4))
+
 
 Digest.logger = console
 

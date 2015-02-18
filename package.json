@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "fs-extra": "~0.16.3",
-    "glob": "~4.3.5"
+    "glob": "~4.3.5",
+    "toposort": "^0.2.10"
   },
   "devDependencies": {
     "chai": "~1.10.0",
