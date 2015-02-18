@@ -77,9 +77,10 @@ class Digest
   # All files matching the `referenceFiles` regexp.
   # These are the target search and replace files.
   _referenceFiles: ->
-    allFiles = glob.sync("#{@publicFolder}/**")
+    allUrls = glob.sync('**', { cwd: @publicFolder })
     referenceFiles = []
-    for file in allFiles
+    for url in allUrls
+      file = @_fileFromUrl url
       referenceFiles.push file if @options.referenceFiles.test(file)
     referenceFiles
 
