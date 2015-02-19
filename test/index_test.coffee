@@ -318,10 +318,9 @@ describe 'Digest', ->
       digest.options.manifest = 'test/public/manifest.json'
       digest.onCompile()
       manifest = JSON.parse(readDigestFile('manifest.json'))
-      # expect(Object.keys(manifest)).to.have.length 4
-      expect(manifest['test.js']).to.equal FIXTURES_AND_DIGESTS['test.js']
-      expect(manifest['js/nested.js']).to.equal FIXTURES_AND_DIGESTS['js/nested.js']
-      expect(manifest['test.css']).to.equal FIXTURES_AND_DIGESTS['test.css']
+      expect(Object.keys(manifest)).to.have.length Object.keys(FIXTURES_AND_DIGESTS).length
+      for url of FIXTURES_AND_DIGESTS
+        expect(manifest[url]).to.equal FIXTURES_AND_DIGESTS[url]
 
   describe 'circular dependency', ->
     beforeEach ->

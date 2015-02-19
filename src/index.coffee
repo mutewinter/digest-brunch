@@ -136,16 +136,28 @@ class Digest
     file = @_fileFromUrl url
     if digestMap[file] == undefined
       if @_validDigestFile file
-        data = fs.readFileSync file
-        shasum = crypto.createHash 'sha1'
-        shasum.update(data)
-        sha1 = shasum.digest('hex')[0..@options.precision-1]
-        newFile = @_addHashToPath(file, sha1)
-        fs.renameSync(file, newFile)
-        digestMap[file] = sha1
+        hash = @_calculateHash file
+        @_moveFile file, hash
+        digestMap[file] = hash
       else
         digestMap[file] = null
     digestMap[file]
+
+  _calculateHash: (file) ->
+    data = fs.readFileSync file
+    shasum = crypto.createHash 'sha1'
+    shasum.update(data)
+    shasum.digest('hex')[0..@options.precision-1]
+
+  _moveFile: (file, hash) ->
+    newFile = @_addHashToPath(file, hash)
+    fs.renameSync(file, newFile)
+
+    for infix in @options.infixes
+      infixFile = @_addInfixToPath file, infix
+      if fs.existsSync(infixFile)
+        newInfixFile = @_addInfixToPath newFile, infix
+        fs.renameSync(infixFile, newInfixFile)
 
   _validDigestFile: (file) ->
     if !fs.existsSync(file)
@@ -160,11 +172,18 @@ class Digest
     newName = "#{base}-#{hash}#{ext}"
     pathlib.join(dir, newName)
 
+  _addInfixToPath: (path, infix) ->
+    dir = pathlib.dirname(path)
+    ext = pathlib.extname(path)
+    base = pathlib.basename(path, ext)
+    newName = "#{base}#{infix}#{ext}"
+    pathlib.join(dir, newName)
+
   _writeManifestFile: (renameMap) ->
     if not @options.manifest
       return
     manifest = {}
-    for file, hash of renameMap
+    for file, hash of renameMap when hash
       relative = pathlib.relative(@publicFolder, file)
       rename = @_addHashToPath relative, hash
       manifest[relative] = rename
