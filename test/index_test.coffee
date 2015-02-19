@@ -12,7 +12,7 @@ FIXTURES_AND_DIGESTS =
   'test.js': 'test-75570c26.js'
   'js/nested.js': 'js/nested-4df52a0a.js'
   'test.css': 'test-e3eda643.css'
-  'otter.jpeg': 'otter-b7071245.jpeg'
+  'otter.jpeg': 'otter-ea06c477.jpeg'
 
 digestFilename = (filename) ->
   digest = FIXTURES_AND_DIGESTS[filename] || filename
@@ -109,7 +109,7 @@ describe 'Digest', ->
       digest.onCompile()
       expect(readDigestFile('index.html')).to.not.contain(host)
 
-  describe.skip 'alternate file versions with infixes', ->
+  describe 'alternate file versions with infixes', ->
     beforeEach ->
       setupFakeFileSystem()
 
@@ -119,15 +119,16 @@ describe 'Digest', ->
       original = relativeDigestFilename('otter.jpeg')
       splitPos = original.length - 5 # we insert the @2x just before the .jpeg
       infixDigested = [original.slice(0, splitPos), "@2x", original.slice(splitPos)].join("")
-      expect(fs.existsSync(path.join('public', infixDigested))).to.be.ok
+      expect(fs.existsSync(path.join(__dirname, 'public', infixDigested))).to.be.ok
 
     it 'does not copy digest to alternative file if not requested', ->
-      digest.options.infixes = null
+      digest.options.infixes = []
       digest.onCompile()
       original = relativeDigestFilename('otter.jpeg')
       splitPos = original.length - 5 # we insert the @2x just before the .jpeg
       infixDigested = [original.slice(0, splitPos), "@2x", original.slice(splitPos)].join("")
-      expect(fs.existsSync(path.join('public', infixDigested))).to.be.not.ok
+      expect(fs.existsSync(path.join(__dirname, 'public', infixDigested))).to.be.not.ok
+      expect(fs.existsSync(path.join(__dirname, 'public', 'otter@2x.jpeg'))).to.be.ok
 
   describe 'two digests on one line', ->
     beforeEach ->
