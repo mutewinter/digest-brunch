@@ -13,6 +13,7 @@ FIXTURES_AND_DIGESTS =
   'js/nested.js': 'js/nested-4df52a0a.js'
   'test.css': 'test-e3eda643.css'
   'otter.jpeg': 'otter-ea06c477.jpeg'
+  'otter-style.css': 'otter-style-8b2b0bb8.css'
 
 digestFilename = (filename) ->
   digest = FIXTURES_AND_DIGESTS[filename] || filename
@@ -43,6 +44,9 @@ describe 'Digest', ->
       env: ['production']
       paths:
         public: path.join('test', 'public')
+      plugins:
+        digest:
+          referenceFiles: /\.(html|css)$/
     )
 
   after ->
@@ -87,6 +91,14 @@ describe 'Digest', ->
     it 'replaces occurrences of js/nested.js in index.html', ->
       expect(readDigestFile('index.html')).to.contain(
         relativeDigestFilename('js/nested.js')
+      )
+
+    it 'cascades digest dependencies', ->
+      expect(readDigestFile('otter-style.css')).to.contain(
+        relativeDigestFilename('otter.jpeg')
+      )
+      expect(readDigestFile('otter-page.html')).to.contain(
+        relativeDigestFilename('otter-style.css')
       )
 
   describe 'asset host prepending', ->
@@ -310,3 +322,18 @@ describe 'Digest', ->
       expect(manifest['test.js']).to.equal FIXTURES_AND_DIGESTS['test.js']
       expect(manifest['js/nested.js']).to.equal FIXTURES_AND_DIGESTS['js/nested.js']
       expect(manifest['test.css']).to.equal FIXTURES_AND_DIGESTS['test.css']
+
+  describe 'circular dependency', ->
+    beforeEach ->
+      setupFakeFileSystem()
+      digest = new Digest(
+        env: ['production']
+        paths:
+          public: path.join('test', 'public')
+        plugins:
+          digest:
+            referenceFiles: /\.circle$/
+      )
+
+    it 'throws', ->
+      expect(-> digest.onCompile()).to.throw('test/public/circular1.circle')
