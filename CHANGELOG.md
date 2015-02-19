@@ -1,3 +1,16 @@
+# v1.4.2
+
+* Refactored fake-fs tests to use the real file system.
+  The fake-fs was somehow causing mocha
+  to report process success even on test failure.
+* Removed the compilation to javascript step.
+  This happens with node and coffeescript automatically.
+* Added Digest.logger for overriding the default `console` logger.
+
+# v1.4.1
+
+* Updated all dependencies; this made all failing tests pass
+
 # v1.4.0
 
 * Feature: [add infix version of file with same digest as original][17]
