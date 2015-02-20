@@ -1,3 +1,11 @@
+# v1.5.0
+
+* Refactor to compute digests in dependency order.
+  This change lets you digest html and css together with changing binary assets.
+* Added Digest.logger for logging to arbitrary routers.
+* This library will now be loaded as a coffee script,
+  instead of adding the intermediate compilation step to js.
+
 # v1.4.2
 
 * Refactored fake-fs tests to use the real file system.
