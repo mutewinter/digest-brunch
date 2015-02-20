@@ -1,6 +1,6 @@
 {
   "name": "digest-brunch",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "A Brunch plugin that appends a unique SHA digest to asset filenames.",
   "author": "Jeremy Mack @mutewinter",
   "homepage": "https://github.com/mutewinter/digest-brunch",
@@ -8,9 +8,8 @@
     "type": "git",
     "url": "git@github.com:mutewinter/digest-brunch.git"
   },
-  "main": "./lib/index",
+  "main": "./src/index",
   "scripts": {
-    "prepublish": "rm -rf lib && coffee --bare --output lib/ src/",
     "test": "node_modules/.bin/mocha --compilers coffee:coffee-script/register"
   },
   "dependencies": {
@@ -20,7 +19,6 @@
   "devDependencies": {
     "chai": "~1.10.0",
     "coffee-script": "~1.9.0",
-    "fake-fs": "~0.5.0",
     "mocha": "~2.1.0"
   }
 }
