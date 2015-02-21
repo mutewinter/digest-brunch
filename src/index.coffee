@@ -95,7 +95,7 @@ class Digest
       match = @options.pattern.exec(contents)
       while match isnt null
         url = match[1]
-        dependency = @_fileFromUrl(url)
+        dependency = @_fileFromUrl url, file
         graph.push [dependency, file]
         match = @options.pattern.exec(contents)
     sorted = toposort(graph)
@@ -103,8 +103,13 @@ class Digest
       files.indexOf(file) >= 0
 
   # The filename a digest url should map to.
-  _fileFromUrl: (reference) ->
-    file = pathlib.join(@publicFolder, reference)
+  _fileFromUrl: (url, referencedFrom) ->
+    if referencedFrom and url[0] != '/'
+      dir = pathlib.dirname(referencedFrom)
+    else
+      dir = @publicFolder
+    file = pathlib.join(dir, url)
+    pathlib.normalize(file)
 
   # Search and replace a single reference file.
   # All digest urls encountered will be mapped to a real file,
@@ -116,7 +121,7 @@ class Digest
     contents = fs.readFileSync(file, 'UTF-8')
     self = this
     replacement = contents.replace @options.pattern, (digest, url) ->
-      hash = self._hashFromUrl url, digestMap
+      hash = self._hashFromUrl url, file, digestMap
       urlWithHash = self._addHashToPath(url, hash)
 
       if self.options.prependHost?[self.config.env[0]]?
@@ -132,8 +137,8 @@ class Digest
   # We're moving files and keeping their hashes as we go.
   # Returns the hash of a file.
   # Computes the hash and renames the file if needed.
-  _hashFromUrl: (url, digestMap) ->
-    file = @_fileFromUrl url
+  _hashFromUrl: (url, referencedFrom, digestMap) ->
+    file = @_fileFromUrl url, referencedFrom
     if digestMap[file] == undefined
       if @_validDigestFile file
         hash = @_calculateHash file

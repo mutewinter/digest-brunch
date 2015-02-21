@@ -101,6 +101,11 @@ describe 'Digest', ->
         relativeDigestFilename('otter-style.css')
       )
 
+    it 'replaces relative digest urls', ->
+      expect(readDigestFile('css/relative.css')).to.contain(
+        path.join('..', relativeDigestFilename('otter.jpeg'))
+      )
+
   describe 'asset host prepending', ->
     beforeEach ->
       setupFakeFileSystem()
