@@ -256,6 +256,11 @@ describe 'Digest', ->
     it 'does not crash', ->
       expect(digest.onCompile.bind(digest)).to.not.throw(Error)
 
+    it 'removes the digest from missing references', ->
+      digest.onCompile()
+      expect(readDigestFile('missing_reference.html')).
+        to.contain('"missing_file.js"')
+
     it 'still replaces valid references', ->
       digest.onCompile()
       expect(readDigestFile('missing_reference.html')).

@@ -166,11 +166,14 @@ class Digest
     fs.statSync(file).isFile()
 
   _addHashToPath: (path, hash) ->
-    dir = pathlib.dirname(path)
-    ext = pathlib.extname(path)
-    base = pathlib.basename(path, ext)
-    newName = "#{base}-#{hash}#{ext}"
-    pathlib.join(dir, newName)
+    if hash
+      dir = pathlib.dirname(path)
+      ext = pathlib.extname(path)
+      base = pathlib.basename(path, ext)
+      newName = "#{base}-#{hash}#{ext}"
+      pathlib.join(dir, newName)
+    else
+      path
 
   _addInfixToPath: (path, infix) ->
     dir = pathlib.dirname(path)
