@@ -1,3 +1,8 @@
+# v1.5.1
+
+* Bug fix: don't add -null to urls that do not resolve to a file.
+* Resolve relative urls including '..' to absolute paths.
+
 # v1.5.0
 
 * Refactor to compute digests in dependency order.
