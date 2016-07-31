@@ -13,13 +13,13 @@
     "test": "node_modules/.bin/mocha --compilers coffee:coffee-script/register"
   },
   "dependencies": {
-    "fs-extra": "~0.16.3",
-    "glob": "~4.3.5",
-    "toposort": "^0.2.10"
+    "glob": "^7.0.5",
+    "toposort": "^1.0.0"
   },
   "devDependencies": {
-    "chai": "~1.10.0",
-    "coffee-script": "~1.9.0",
-    "mocha": "~2.1.0"
+    "chai": "^3.5.0",
+    "coffee-script": "^1.10.0",
+    "fs-extra": "^0.30.0",
+    "mocha": "^2.5.3"
   }
 }
