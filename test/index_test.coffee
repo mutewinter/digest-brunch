@@ -17,7 +17,7 @@ FIXTURES_AND_DIGESTS =
 
 digestFilename = (filename) ->
   digest = FIXTURES_AND_DIGESTS[filename] || filename
-  path.join(__dirname, 'public', digest)
+  path.posix.join(__dirname, 'public', digest)
 
 digestFileExists = (filename) ->
   fs.existsSync(digestFilename(filename))
@@ -26,7 +26,7 @@ readDigestFile = (filename) ->
   fs.readFileSync(digestFilename(filename), 'UTF-8')
 
 relativeDigestFilename = (filename) ->
-  path.relative(path.join(__dirname, 'public'), digestFilename(filename))
+  path.posix.relative(path.posix.join(__dirname, 'public'), digestFilename(filename))
 
 loadFixture = (from, to = from) ->
   realContents = realFs.readFileSync("test/fixtures/#{from}").toString()
@@ -103,7 +103,7 @@ describe 'Digest', ->
 
     it 'replaces relative digest urls', ->
       expect(readDigestFile('css/relative.css')).to.contain(
-        path.join('..', relativeDigestFilename('otter.jpeg'))
+        path.posix.join('..', relativeDigestFilename('otter.jpeg'))
       )
 
   describe 'asset host prepending', ->
@@ -345,4 +345,4 @@ describe 'Digest', ->
       )
 
     it 'throws', ->
-      expect(-> digest.onCompile()).to.throw('test/public/circular1.circle')
+      expect(-> digest.onCompile()).to.throw('circular1.circle')

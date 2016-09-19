@@ -176,7 +176,7 @@ class Digest
       ext = pathlib.extname(path)
       base = pathlib.basename(path, ext)
       newName = "#{base}-#{hash}#{ext}"
-      pathlib.join(dir, newName)
+      pathlib.posix.join(dir, newName)
     else
       path
 
@@ -185,14 +185,14 @@ class Digest
     ext = pathlib.extname(path)
     base = pathlib.basename(path, ext)
     newName = "#{base}#{infix}#{ext}"
-    pathlib.join(dir, newName)
+    pathlib.posix.join(dir, newName)
 
   _writeManifestFile: (renameMap) ->
     if not @options.manifest
       return
     manifest = {}
     for file, hash of renameMap when hash
-      relative = pathlib.relative(@publicFolder, file)
+      relative = pathlib.relative(@publicFolder, file).replace(/\\/g, '/')
       rename = @_addHashToPath relative, hash
       manifest[relative] = rename
     fs.writeFileSync(@options.manifest, JSON.stringify(manifest, null, 4))
