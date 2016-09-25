@@ -1,3 +1,7 @@
+# v1.6.0
+
+* #30 Fix issue with paths being incorrect on Windows
+
 # v1.5.1
 
 * Bug fix: don't add -null to urls that do not resolve to a file.
