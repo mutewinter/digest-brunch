@@ -1,5 +1,11 @@
-digest-brunch [![NPM Version][npm-badge]][npm] [![Build Status][travis-badge]][travis] [![Dependency Status][gemnasium-badge]][gemnasium]
-=============
+# Unsupported [![Project Status: Unsupported - The project has reached a stable, usable state but the author(s) have ceased all work on it.](http://www.repostatus.org/badges/latest/unsupported.svg)](http://www.repostatus.org/#unsupported)
+
+I am no longer maintaining digest-brunch. I switched to Webpack for my front end
+applications. Contact me (@mutewinter) if you'd like to take over support for
+digest-brunch.
+
+# digest-brunch [![NPM Version][npm-badge]][npm] [![Build Status][travis-badge]][travis] [![Dependency Status][gemnasium-badge]][gemnasium]
+
 
 A [Brunch][] plugin that appends a unique SHA digest to asset filenames. Allows
 for [far-future caching][am] of assets.
