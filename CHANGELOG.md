@@ -1,6 +1,7 @@
 # v1.6.0
 
 * #30 Fix issue with paths being incorrect on Windows
+* Update dependencies.
 
 # v1.5.1
 
